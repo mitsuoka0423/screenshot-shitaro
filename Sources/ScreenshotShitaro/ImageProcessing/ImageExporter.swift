@@ -20,10 +20,10 @@ enum ImageExporter {
         pasteboard.writeObjects([image])
     }
 
-    /// NSSavePanelを使ってPNG/JPEGで保存
+    /// NSSavePanelを使ってPNG/JPEGで保存。保存成功時は true、キャンセル・失敗時は false を返す
     @MainActor
-    static func saveWithPanel(view: NSView, window: NSWindow?) async {
-        guard let image = render(view: view) else { return }
+    static func saveWithPanel(view: NSView, window: NSWindow?) async -> Bool {
+        guard let image = render(view: view) else { return false }
 
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.png, .jpeg]
@@ -36,14 +36,15 @@ enum ImageExporter {
             response = panel.runModal()
         }
 
-        guard response == .OK, let url = panel.url else { return }
+        guard response == .OK, let url = panel.url else { return false }
 
         guard let tiffData = image.tiffRepresentation,
-              let bitmapRep = NSBitmapImageRep(data: tiffData) else { return }
+              let bitmapRep = NSBitmapImageRep(data: tiffData) else { return false }
 
         let fileType: NSBitmapImageRep.FileType = url.pathExtension.lowercased() == "jpg" ? .jpeg : .png
-        guard let data = bitmapRep.representation(using: fileType, properties: [:]) else { return }
+        guard let data = bitmapRep.representation(using: fileType, properties: [:]) else { return false }
 
         try? data.write(to: url)
+        return true
     }
 }

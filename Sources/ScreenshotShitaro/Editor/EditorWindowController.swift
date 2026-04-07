@@ -76,8 +76,8 @@ final class EditorWindowController: NSWindowController {
     private func handleSave() {
         guard let canvasView = editorVC.view.subviews.first(where: { $0 is CanvasView }) else { return }
         Task { @MainActor in
-            await ImageExporter.saveWithPanel(view: canvasView, window: self.window)
-            self.close()
+            let saved = await ImageExporter.saveWithPanel(view: canvasView, window: self.window)
+            if saved { self.close() }
         }
     }
 }
