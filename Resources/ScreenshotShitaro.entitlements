@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- アプリサンドボックス（開発時は無効、配布時に有効化） -->
+    <key>com.apple.security.app-sandbox</key>
+    <false/>
+    <!-- ファイルシステム読み書き -->
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+    <!-- スクリーン録画（スクリーンショット読み込みに必要） -->
+    <key>com.apple.security.screen-capture</key>
+    <true/>
+</dict>
+</plist>

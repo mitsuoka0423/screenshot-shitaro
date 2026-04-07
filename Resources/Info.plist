@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleIdentifier</key>
+    <string>com.mitsuoka0423.ScreenshotShitaro</string>
+    <key>CFBundleName</key>
+    <string>ScreenshotShitaro</string>
+    <key>CFBundleDisplayName</key>
+    <string>ScreenshotShitaro</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.1.0</string>
+    <key>CFBundleExecutable</key>
+    <string>ScreenshotShitaro</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>14.0</string>
+    <!-- メニューバー常駐アプリ: Dock に表示しない -->
+    <key>LSUIElement</key>
+    <true/>
+    <!-- 権限説明 -->
+    <key>NSAccessibilityUsageDescription</key>
+    <string>スクリーンショットキーの検知にアクセシビリティ権限が必要です。</string>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>スクリーンショット操作の自動検知に使用します。</string>
+    <key>NSScreenCaptureUsageDescription</key>
+    <string>スクリーンショットファイルの読み込みに使用します。</string>
+</dict>
+</plist>

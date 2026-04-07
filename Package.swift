@@ -5,9 +5,12 @@ let package = Package(
     name: "ScreenshotShitaro",
     platforms: [.macOS(.v14)],
     targets: [
-        .target(
+        .executableTarget(
             name: "ScreenshotShitaro",
-            path: "Sources/ScreenshotShitaro"
+            path: "Sources/ScreenshotShitaro",
+            resources: [
+                .process("Resources/Assets.xcassets")
+            ]
         ),
         .testTarget(
             name: "ScreenshotShitaroTests",
