@@ -1,15 +1,14 @@
 import AppKit
 
-/// 注釈エディタウィンドウのコントローラ（スタブ実装）
-/// フェーズ2（Issue #5, #6）で本実装に置き換える
 @MainActor
 final class EditorWindowController: NSWindowController {
     private static var currentController: EditorWindowController?
 
-    private let imageURL: URL?
+    private let editorVC: EditorViewController
 
-    init(imageURL: URL?) {
-        self.imageURL = imageURL
+    init(image: NSImage) {
+        editorVC = EditorViewController(image: image)
+
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 800, height: 600),
             styleMask: [.titled, .closable, .resizable, .miniaturizable],
@@ -18,8 +17,11 @@ final class EditorWindowController: NSWindowController {
         )
         window.title = "ScreenshotShitaro"
         window.isReleasedWhenClosed = false
+        window.contentViewController = editorVC
+        window.center()
+
         super.init(window: window)
-        setupPlaceholderContent()
+        window.delegate = self
     }
 
     required init?(coder: NSCoder) {
@@ -28,42 +30,64 @@ final class EditorWindowController: NSWindowController {
 
     // MARK: - Factory
 
-    /// エディタウィンドウを開く（既存ウィンドウがあれば前面に出す）
+    /// エディタウィンドウを開く（スクリーンショット検知時・メニューから呼ばれる）
     static func open(with imageURL: URL? = nil) {
-        if currentController == nil {
-            currentController = EditorWindowController(imageURL: imageURL)
+        let image: NSImage
+        if let url = imageURL, let loaded = NSImage(contentsOf: url) {
+            image = loaded
+        } else {
+            image = NSImage(size: NSSize(width: 800, height: 600))
         }
-        currentController?.showWindow(nil)
-        currentController?.window?.center()
+        let controller = EditorWindowController(image: image)
+        currentController = controller
+        controller.showWindow(nil)
         NSApplication.shared.activate(ignoringOtherApps: true)
     }
 
-    // MARK: - Placeholder UI
+    override func showWindow(_ sender: Any?) {
+        super.showWindow(sender)
+        window?.makeKeyAndOrderFront(sender)
+        NSApplication.shared.activate(ignoringOtherApps: true)
+    }
 
-    private func setupPlaceholderContent() {
-        let label = NSTextField(labelWithString: "Editor Stub\n（フェーズ2で実装）")
-        label.alignment = .center
-        label.font = NSFont.systemFont(ofSize: 24)
-        label.translatesAutoresizingMaskIntoConstraints = false
+    // MARK: - Key Commands
 
-        let urlLabel = NSTextField(
-            labelWithString: imageURL.map { "File: \($0.lastPathComponent)" } ?? "No file"
-        )
-        urlLabel.alignment = .center
-        urlLabel.textColor = .secondaryLabelColor
-        urlLabel.translatesAutoresizingMaskIntoConstraints = false
+    override func keyDown(with event: NSEvent) {
+        guard event.modifierFlags.contains(.command) else {
+            super.keyDown(with: event)
+            return
+        }
+        switch event.charactersIgnoringModifiers {
+        case "c":
+            handleCopy()
+        case "s":
+            handleSave()
+        default:
+            super.keyDown(with: event)
+        }
+    }
 
-        let stack = NSStackView(views: [label, urlLabel])
-        stack.orientation = .vertical
-        stack.spacing = 8
-        stack.translatesAutoresizingMaskIntoConstraints = false
+    private func handleCopy() {
+        guard let canvasView = editorVC.view.subviews.first(where: { $0 is CanvasView }) else { return }
+        ImageExporter.copyToClipboard(view: canvasView)
+        close()
+    }
 
-        let contentView = NSView()
-        contentView.addSubview(stack)
-        NSLayoutConstraint.activate([
-            stack.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            stack.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
-        ])
-        window?.contentView = contentView
+    private func handleSave() {
+        guard let canvasView = editorVC.view.subviews.first(where: { $0 is CanvasView }) else { return }
+        Task { @MainActor in
+            await ImageExporter.saveWithPanel(view: canvasView, window: self.window)
+            self.close()
+        }
+    }
+}
+
+// MARK: - NSWindowDelegate
+
+extension EditorWindowController: NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        if EditorWindowController.currentController === self {
+            EditorWindowController.currentController = nil
+        }
     }
 }
