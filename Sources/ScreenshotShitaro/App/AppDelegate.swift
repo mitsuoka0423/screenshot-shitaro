@@ -44,13 +44,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Screenshot Detection
 
     private func checkPermissionsAndStartDetection() {
-        if PermissionChecker.hasAccessibilityPermission() {
-            startDetection()
-        } else {
+        // アクセシビリティ権限チェック
+        if !PermissionChecker.hasAccessibilityPermission() {
             PermissionChecker.requestAccessibilityPermission()
-            // 権限取得後でも FSEvents ベースの検知は動作するため開始する
-            startDetection()
         }
+
+        // スクリーン録画権限チェック
+        // 未付与の場合はシステム設定（プライバシーとセキュリティ → 画面収録）へ誘導
+        if !PermissionChecker.hasScreenRecordingPermission() {
+            PermissionChecker.requestScreenRecordingPermission()
+        }
+
+        // 権限の有無によらず FSEvents ベースの検知は開始する
+        startDetection()
     }
 
     private func startDetection() {

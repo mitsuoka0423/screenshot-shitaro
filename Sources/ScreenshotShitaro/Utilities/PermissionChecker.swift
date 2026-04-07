@@ -19,4 +19,10 @@ enum PermissionChecker {
         let windowList = CGWindowListCopyWindowInfo(.optionOnScreenOnly, kCGNullWindowID)
         return windowList != nil
     }
+
+    /// スクリーン録画権限が未付与の場合、システム設定の画面収録ページを開く
+    static func requestScreenRecordingPermission() {
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") else { return }
+        NSWorkspace.shared.open(url)
+    }
 }
