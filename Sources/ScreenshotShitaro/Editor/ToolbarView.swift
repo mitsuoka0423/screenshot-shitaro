@@ -4,6 +4,7 @@ enum AnnotationTool: String, CaseIterable {
     case arrow, rect, circle, line, text, blur, highlight
 }
 
+@MainActor
 protocol ToolbarViewDelegate: AnyObject {
     func toolbar(_ toolbar: ToolbarView, didSelectTool tool: AnnotationTool)
     func toolbar(_ toolbar: ToolbarView, didChangeColor color: NSColor)

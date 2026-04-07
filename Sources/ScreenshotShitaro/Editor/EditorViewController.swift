@@ -1,5 +1,6 @@
 import AppKit
 
+@MainActor
 class EditorViewController: NSViewController {
     let store = AnnotationStore()
     private let image: NSImage
@@ -51,19 +52,19 @@ class EditorViewController: NSViewController {
 
 extension EditorViewController: ToolbarViewDelegate {
     func toolbar(_ toolbar: ToolbarView, didSelectTool tool: AnnotationTool) {
-        // CanvasView に選択中ツールを伝える（#5 実装後に接続）
+        canvasView.currentTool = tool
     }
 
     func toolbar(_ toolbar: ToolbarView, didChangeColor color: NSColor) {
-        // CanvasView に色変更を伝える（#5 実装後に接続）
+        canvasView.currentStyle.color = color
     }
 
     func toolbar(_ toolbar: ToolbarView, didChangeLineWidth width: CGFloat) {
-        // CanvasView に線幅変更を伝える（#5 実装後に接続）
+        canvasView.currentStyle.lineWidth = width
     }
 
     func toolbar(_ toolbar: ToolbarView, didChangeFontSize size: CGFloat) {
-        // CanvasView にフォントサイズ変更を伝える（#5 実装後に接続）
+        canvasView.currentStyle.fontSize = size
     }
 
     func toolbarDidRequestUndo(_ toolbar: ToolbarView) {
