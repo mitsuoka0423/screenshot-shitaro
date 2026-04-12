@@ -46,6 +46,11 @@ struct EditorView: View {
             store.removeAll()
             blurredImages.removeAll()
         }
+        // undo/redo 後に annotations から消えた blurredImages エントリを削除（BUG-B 修正）
+        .onChange(of: store.annotations) { _, newAnnotations in
+            let activeIDs = Set(newAnnotations.map { $0.id })
+            blurredImages = blurredImages.filter { activeIDs.contains($0.key) }
+        }
     }
 
     // MARK: - Canvas エリア
@@ -187,7 +192,30 @@ struct EditorView: View {
               let cgImage = nsImg.cgImage(forProposedRect: nil, context: nil, hints: nil)
         else { return }
 
-        if let blurred = await BlurProcessor.shared.blur(image: cgImage, rect: rect) {
+        // Canvas 座標 → 画像ピクセル座標のスケール変換（BUG-A 修正）
+        //
+        // .scaledToFit() はアスペクト比を維持しながら短辺に合わせて縮小するため、
+        // 長辺方向にレターボックス余白が生じる。オフセットも補正することで
+        // Retina・非 Retina 両環境でぼかし範囲がズレない。
+        let imgW = CGFloat(cgImage.width)
+        let imgH = CGFloat(cgImage.height)
+
+        // Canvas 上で画像が占める実際の表示スケール（アスペクト比維持の最小スケール）
+        let displayScale = min(canvasSize.width / imgW, canvasSize.height / imgH)
+
+        // 画像が Canvas 内でセンタリングされるレターボックスオフセット
+        let offsetX = (canvasSize.width  - imgW * displayScale) / 2
+        let offsetY = (canvasSize.height - imgH * displayScale) / 2
+
+        // Canvas 座標を画像ピクセル座標に変換
+        let imageRect = CGRect(
+            x: (rect.minX - offsetX) / displayScale,
+            y: (rect.minY - offsetY) / displayScale,
+            width:  rect.width  / displayScale,
+            height: rect.height / displayScale
+        )
+
+        if let blurred = await BlurProcessor.shared.blur(image: cgImage, rect: imageRect) {
             blurredImages[annotation.id] = blurred
         }
     }

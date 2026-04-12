@@ -1,10 +1,10 @@
 import SwiftUI
 
-enum AnnotationTool: Sendable {
+enum AnnotationTool: Sendable, Equatable {
     case arrow, rect, circle, line, text, blur, highlight
 }
 
-struct Annotation: Identifiable, Sendable {
+struct Annotation: Identifiable, Sendable, Equatable {
     let id: UUID
     var tool: AnnotationTool
     var start: CGPoint
