@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 
 struct EditorView: View {
     @Environment(\.undoManager) private var undoManager
+    @Environment(ScreenshotDetector.self) private var detector
 
     @State private var store = AnnotationStore()
     @State private var previewAnnotation: Annotation?
@@ -16,7 +17,7 @@ struct EditorView: View {
     // blur ツール: 事前処理済み CGImage
     @State private var blurredImages: [UUID: CGImage] = [:]
 
-    // ソース画像（Issue #14 マージ後に ScreenshotDetector から注入予定）
+    // ソース画像（ScreenshotDetector.latestScreenshotURL から自動更新）
     @State private var sourceImage: NSImage?
 
     var body: some View {
@@ -37,6 +38,13 @@ struct EditorView: View {
         .onAppear {
             // AppKit 使用: floating ウィンドウ設定（1行のみ）
             NSApp.windows.first { $0.title == "Editor" }?.level = .floating
+        }
+        // 新しいスクリーンショットが検知されたら画像を読み込みキャンバスをリセット
+        .onChange(of: detector.latestScreenshotURL) { _, url in
+            guard let url else { return }
+            sourceImage = NSImage(contentsOf: url)
+            store.removeAll()
+            blurredImages.removeAll()
         }
     }
 
