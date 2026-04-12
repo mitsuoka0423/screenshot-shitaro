@@ -46,6 +46,11 @@ struct EditorView: View {
             store.removeAll()
             blurredImages.removeAll()
         }
+        // undo/redo 後に annotations から消えた blurredImages エントリを削除（BUG-B 修正）
+        .onChange(of: store.annotations) { _, newAnnotations in
+            let activeIDs = Set(newAnnotations.map { $0.id })
+            blurredImages = blurredImages.filter { activeIDs.contains($0.key) }
+        }
     }
 
     // MARK: - Canvas エリア
